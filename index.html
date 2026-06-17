@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -1422,15 +1421,19 @@
                     </div>
                     <div className="bg-orange-50 p-3 rounded-xl border border-orange-100">
                        <h3 className="text-xs font-bold text-orange-800 mb-2">💸 เพิ่มรายจ่ายจุกจิก (เช่น ค่าแก๊ส, ซื้อของเพิ่ม)</h3>
-                       <div className="flex gap-2 mb-2">
-                         <input type="text" list="exp-cat-list" placeholder="ค่าอะไร..." value={expenseInput.name} onChange={e=>setExpenseInput({...expenseInput, name: e.target.value})} className="flex-1 p-2 text-xs border rounded-lg outline-none focus:border-orange-500 font-medium bg-white" />
-                         <datalist id="exp-cat-list">{expCats.map(c=><option key={c} value={c}/>)}</datalist>
-                         <input type="number" placeholder="ยอดเงิน" value={expenseInput.amount} onChange={e=>setExpenseInput({...expenseInput, amount: e.target.value})} className="w-24 p-2 text-xs border rounded-lg outline-none focus:border-orange-500 font-bold text-center" />
-                         <select value={expenseInput.payMethod || 'เงินสด'} onChange={e=>setExpenseInput({...expenseInput, payMethod: e.target.value})} className="p-2 text-xs border rounded-lg outline-none bg-white font-bold text-gray-700">
-                           <option value="เงินสด">💵 สด</option>
-                           <option value="โอน">🏦 โอน</option>
-                         </select>
-                         <button onClick={() => handleAddExpense()} className="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-lg font-bold text-lg shadow-sm active:scale-95 transition-transform">+</button>
+                       <div className="flex flex-wrap sm:flex-nowrap gap-2 mb-2">
+                         <div className="flex-1 min-w-[140px]">
+                           <input type="text" list="exp-cat-list" placeholder="ค่าอะไร..." value={expenseInput.name} onChange={e=>setExpenseInput({...expenseInput, name: e.target.value})} className="w-full p-2 text-xs border rounded-lg outline-none focus:border-orange-500 font-medium bg-white" />
+                           <datalist id="exp-cat-list">{expCats.map(c=><option key={c} value={c}/>)}</datalist>
+                         </div>
+                         <div className="flex gap-2 flex-1 sm:flex-none">
+                           <input type="number" placeholder="ยอดเงิน" value={expenseInput.amount} onChange={e=>setExpenseInput({...expenseInput, amount: e.target.value})} className="w-full sm:w-24 p-2 text-xs border rounded-lg outline-none focus:border-orange-500 font-bold text-center" />
+                           <select value={expenseInput.payMethod || 'เงินสด'} onChange={e=>setExpenseInput({...expenseInput, payMethod: e.target.value})} className="p-2 text-xs border rounded-lg outline-none bg-white font-bold text-gray-700 shrink-0">
+                             <option value="เงินสด">💵 สด</option>
+                             <option value="โอน">🏦 โอน</option>
+                           </select>
+                           <button onClick={() => handleAddExpense()} className="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-lg font-bold text-lg shadow-sm active:scale-95 transition-transform shrink-0">+</button>
+                         </div>
                        </div>
                        <p className="text-[9px] text-orange-600 mt-2">* ค่าใช้จ่ายที่บันทึกตรงนี้ จะถูกนำไปหักออกจากกำไรขั้นต้น (Gross Profit) ของวันนั้นๆ อัตโนมัติ หากกรอกผิดสามารถแก้ไขหรือลบในประวัติด้านล่างได้ทันที</p>
                     </div>
@@ -1479,24 +1482,11 @@
                             <div className="grid grid-cols-2 gap-4">
                               <div><p className="font-bold text-gray-700 mb-1 border-b pb-1">รายเดือน {currentMonthData.isEstimate ? '(ประเมิน)' : ''}</p><ul className="space-y-1 text-gray-600">{currentMonthData.overheadList?.length > 0 ? currentMonthData.overheadList.map(o => ( <li key={o.id} className="flex justify-between"><span className="truncate pr-1">{o.name}</span><span className="font-medium text-gray-800 shrink-0">{formatMoney(o.actual || o.estimate)}</span></li> )) : <li className="text-gray-400 italic">ไม่มีรายการ</li>}</ul></div>
                               <div><p className="font-bold text-gray-700 mb-1 border-b pb-1">รายวัน (รวมทั้งเดือน)</p><ul className="space-y-1 text-gray-600">{currentMonthData.expensesList?.map(e => {
-                                                const rawExp = currentMonthData.rawExpenses ? currentMonthData.rawExpenses.find(x => x.name === e.name) : null;
-                                                const isEditing = rawExp && editingExpId === rawExp.id;
                                                 return (
-                                                  <li key={e.id || e.name} className="flex justify-between items-center group">
+                                                  <li key={e.name} className="flex justify-between items-center group">
                                                     <span className="truncate pr-2">- {e.name}</span>
                                                     <div className="flex items-center gap-1 shrink-0">
-                                                      {isEditing ? (
-                                                        <>
-                                                          <input type="number" value={editingExpAmount} onChange={ev => setEditingExpAmount(ev.target.value)} className="w-20 p-0.5 border-2 border-orange-400 rounded text-center font-bold text-[10px] outline-none" autoFocus onKeyDown={ev => { if(ev.key==='Enter') handleUpdateExpense(rawExp.id, editingExpAmount); if(ev.key==='Escape') setEditingExpId(null); }} />
-                                                          <button onClick={() => handleUpdateExpense(rawExp.id, editingExpAmount)} className="text-green-600 hover:text-green-800 font-bold text-[9px] px-1 rounded bg-white border border-green-300 shadow-sm">บันทึก</button>
-                                                          <button onClick={() => setEditingExpId(null)} className="text-gray-400 hover:text-gray-600 font-bold text-[9px] px-1 rounded bg-white border shadow-sm">ยกเลิก</button>
-                                                        </>
-                                                      ) : (
-                                                        <>
-                                                          <span onClick={() => { if(rawExp) { setEditingExpId(rawExp.id); setEditingExpAmount(String(e.amount)); }}} className={`font-bold ${rawExp ? 'cursor-pointer hover:text-orange-600 hover:underline' : ''}`} title={rawExp ? 'คลิกเพื่อแก้ไขยอด' : ''}>{formatMoney(e.amount)} ฿</span>
-                                                          <button onClick={() => { if(window.confirm('ลบรายการใช้จ่ายนี้ออกจากประวัติ?')) { if (rawExp) handleDeleteExpense(rawExp.id); }}} className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 font-bold px-1 rounded bg-white border shadow-sm transition-opacity">ลบ</button>
-                                                        </>
-                                                      )}
+                                                      <span className="font-bold text-gray-800">{formatMoney(e.amount)} ฿</span>
                                                     </div>
                                                   </li>
                                                 );
@@ -1569,20 +1559,12 @@
                                       <div><div className="flex justify-between text-orange-700 font-bold mb-1 border-b border-gray-100 pb-1"><span title="ค่าเช่า, เงินเดือน ฯลฯ หารเฉลี่ยตามวัน">รายเดือนเฉลี่ย {item.isEstimate ? '(ประเมิน)' : ''}</span><span>{formatMoney(item.overhead)} <span className="text-[9px] text-orange-400 font-normal">({item.sales > 0 ? ((item.overhead/item.sales)*100).toFixed(1) : 0}%)</span></span></div></div>
                                       <div>
                                         <div className="flex justify-between text-orange-700 font-bold mb-1 border-b border-gray-100 pb-1"><span>จ่ายยิบย่อยรายวัน</span><span>{formatMoney(item.dailyExp)} <span className="text-[9px] text-orange-400 font-normal">({item.sales > 0 ? ((item.dailyExp/item.sales)*100).toFixed(1) : 0}%)</span></span></div>
-                                        {item.rawExpenses.length > 0 ? (
+                                        {item.expensesList.length > 0 ? (
                                           <ul className="pl-2 pr-2 py-1.5 bg-orange-50 text-[10px] text-gray-700 rounded-lg border border-orange-100 font-medium space-y-1">
-                                            {item.rawExpenses.map(e => (
-                                              <li key={e.id} className="flex justify-between items-center group">
+                                            {item.expensesList.map(e => (
+                                              <li key={e.name} className="flex justify-between items-center">
                                                 <span className="truncate pr-2">- {e.name}</span>
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                  <span>{formatMoney(e.amount)} ฿</span>
-                                                  {auth.role === 'owner' && (
-                                                    <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
-                                                      <button onClick={(ev) => { ev.stopPropagation(); setExpenseInput({ id: e.id, name: e.name, amount: e.amount, payMethod: e.payMethod || 'เงินสด' }); const dp = parseDDMMYYYY(e.date); setCountDate(`${dp.getFullYear()}-${String(dp.getMonth()+1).padStart(2,'0')}-${String(dp.getDate()).padStart(2,'0')}`); document.querySelector('.expenses-form')?.scrollIntoView({behavior: 'smooth'}); }} className="text-[10px] text-blue-600 hover:text-blue-800 bg-white border rounded px-1 shadow-sm">✏️ แก้ไข</button>
-                                                      <button onClick={(ev) => { ev.stopPropagation(); if(window.confirm('ลบรายจ่ายนี้?')) setDailyExpenses(dailyExpenses.filter(x=>x.id!==e.id)); }} className="text-[10px] text-red-600 hover:text-red-800 bg-white border rounded px-1 shadow-sm">🗑️ ลบ</button>
-                                                    </div>
-                                                  )}
-                                                </div>
+                                                <span className="shrink-0">{formatMoney(e.amount)} ฿</span>
                                               </li>
                                             ))}
                                           </ul>
